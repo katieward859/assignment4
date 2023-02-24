@@ -39,4 +39,6 @@ chart1 <- chart1data %>%
     axis.text.x = element_text(angle = 70), legend.position = "bottom"
   )
 
+chart1
+
 ```
