@@ -1,0 +1,42 @@
+---
+title: "assignment04"
+format: 
+  html: 
+    self-contained: true
+editor: visual
+author: "Katie Ward and Ben Burnley"
+---
+
+## Set-Up
+
+```{r}
+#|include: false
+library (tidyverse)
+library (haven)
+data <- read_sav("data/ATP_W101.sav")
+```
+
+## Chart 1
+
+```{r}
+
+chart1data <- data %>%
+  filter(F_PARTYSUM_FINAL == 1 | F_PARTYSUM_FINAL == 2 ) %>%
+  mutate(parties = case_when(F_PARTYSUM_FINAL == 1 ~"Republican/Lean Repub.", F_PARTYSUM_FINAL == 2 ~ "Democrat/Lean Dem.", TRUE~NA_character_)) %>%
+  mutate(religiousactivity = case_when(F_ATTEND ==1 ~ "More than once a week", F_ATTEND == 2 ~ "Once a week", F_ATTEND == 3 ~ "Once or twice a month", F_ATTEND ==4 ~ "A few times a year", F_ATTEND ==5 ~ "Seldom", F_ATTEND ==6 ~ "Never", TRUE~NA_character_ ))
+  
+```
+
+```{r}
+
+chart1 <- chart1data %>% 
+  filter(!is.na(religiousactivity)) %>%
+  ggplot(aes(religiousactivity, fill=parties)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c("darkblue", "darkred")) +
+  coord_flip() +
+  theme(
+    axis.text.x = element_text(angle = 70), legend.position = "bottom"
+  )
+
+```
