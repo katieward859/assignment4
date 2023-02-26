@@ -9,25 +9,53 @@ author: "Katie Ward and Ben Burnley"
 
 ## Set-Up
 
+## Set-Up
+
 ```{r}
-#|include: false
+#| echo: false
+#| message: false
+ 
 library (tidyverse)
 library (haven)
 data <- read_sav("data/ATP_W101.sav")
 ```
 
+Our data are from [Pew Research Center's American Trends Panel Wave 101](https://www.pewresearch.org/american-trends-panel-datasets/). This survey asks a battery of traditional political questions and this particular wave focused on political priorities. The survey was in the field January 10 -- January 17, 2022.
+
+\newline
+
 ## Chart 1
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show data cleaning code"
 
+# create data for first chart
 chart1data <- data %>%
   filter(F_PARTYSUM_FINAL == 1 | F_PARTYSUM_FINAL == 2 ) %>%
-  mutate(parties = case_when(F_PARTYSUM_FINAL == 1 ~"Republican/Lean Repub.", F_PARTYSUM_FINAL == 2 ~ "Democrat/Lean Dem.", TRUE~NA_character_)) %>%
-  mutate(religiousactivity = case_when(F_ATTEND ==1 ~ "More than once a week", F_ATTEND == 2 ~ "Once a week", F_ATTEND == 3 ~ "Once or twice a month", F_ATTEND ==4 ~ "A few times a year", F_ATTEND ==5 ~ "Seldom", F_ATTEND ==6 ~ "Never", TRUE~NA_character_ ))
-  
+  mutate(parties = case_when(F_PARTYSUM_FINAL == 1 ~"Republican/Lean Repub.", 
+                             F_PARTYSUM_FINAL == 2 ~ "Democrat/Lean Dem.", 
+                             TRUE~NA_character_)) %>%
+  mutate(religiousactivity = case_when(F_ATTEND ==1 ~ "More than once a week", 
+                                       F_ATTEND == 2 ~ "Once a week", 
+                                       F_ATTEND == 3 ~ "Once or twice a month", 
+                                       F_ATTEND ==4 ~ "A few times a year", 
+                                       F_ATTEND ==5 ~ "Seldom", 
+                                       F_ATTEND ==6 ~ "Never", 
+                                       TRUE~NA_character_ ))
+
+# create levels for religious activity variable
+rel_levels = c("Never", "Seldom", "A few times a year", "Once or twice a month", "Once a week", "More than once a week")  
+
+# factor the religious activity variable
+chart1data <- chart1data %>% 
+  mutate(religiousactivity = factor(religiousactivity, levels = rel_levels))
 ```
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show code for chart"
+#| message: false
 
 chart1 <- chart1data %>% 
   filter(!is.na(religiousactivity)) %>%
@@ -35,10 +63,28 @@ chart1 <- chart1data %>%
   geom_bar(position = "dodge") +
   scale_fill_manual(values = c("darkblue", "darkred")) +
   coord_flip() +
+  theme_minimal() +
+  labs(
+    title = "Religious Service Attendance by Party Identification",
+    subtitle = "Aside from weddings and funerals, how often do you attend religious services?",
+    x = "Attendance Level",
+    y = "Number of Respondents",
+    caption = "Source: Pew Data Center American Trends Panel Wave 101",
+    fill = "Party ID"
+  ) +
   theme(
-    axis.text.x = element_text(angle = 70), legend.position = "bottom"
+    axis.text.x = element_text(angle = 70), 
+    legend.position = "bottom",
+    plot.title = element_text(face = "bold"),
+    plot.subtitle = element_text(face = "italic")
   )
 
 chart1
-
 ```
+
+The graph above shows the relationship between party identification and religious service attendance. A large number of the respondents who identify as Democrats report attending religious services "never" or "seldom". For respondents that identify as Republican, there is a greater number that attend more frequently. The difference between the parties is not as large as expected in those who attend religious services once a week to once a month.
+
+\newline
+
+## Chart 2
+
