@@ -105,7 +105,7 @@ chart2data <- chart1data %>%
 #| code-summary: "Show code for chart"
 #| message: false
 
-chart2data %>%
+chart2 <- chart2data %>%
   ggplot(aes (x = "", y =satisfied, fill=parties)) +
     geom_col() +
       coord_polar("y", start=0) +
@@ -114,6 +114,44 @@ chart2data %>%
             labs(
     title = "Satisfication Rate by Parties",
     subtitle = "Respondents who said they were satisfied with the way things are going in this country." )
+
+chart2
   
-  
+```
+## Chart 3
+
+```{r}
+
+#| code-fold: true
+#| code-summary: "Show data cleaning code"
+
+chart3data <- data %>%
+  filter(F_AGECAT != 99) %>%
+    mutate(age = case_when(F_AGECAT ==1 ~"18-29", 
+                           F_AGECAT==2 ~ "20-49", 
+                           F_AGECAT==3 ~ "50-64", 
+                           F_AGECAT ==4 ~ "65+", TRUE~NA_character_ )) %>%
+  group_by(age) %>%
+  summarize(ss = sum(PRIPRES_SC_W101==1, na.rm = TRUE),
+            climate = sum(PRIPRES_GCC_W101==1, na.rm = TRUE), 
+            crime = sum(PRIPRES_CRI_W101==1, na.rm = TRUE), 
+            immigration = sum(PRIPRES_IMM_W101==1, na.rm = TRUE)) %>%
+  pivot_longer(cols = 2:5, names_to = "Policy", values_to = "count")
+
+```
+
+```{r}
+
+chart3 <- chart3data %>%
+  ggplot(aes(age, count, color=Policy)) +
+    geom_point(size = 3) +
+    geom_line(aes(group = Policy)) + 
+  theme_minimal() +
+  theme( plot.subtitle = element_text(size = 8)) +
+  labs(
+    title = "Top Policy Priorities by Age",
+    subtitle = "How many respondents selected various policy priorities by each age group" )
+
+chart3  
+
 ```
