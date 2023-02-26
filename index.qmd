@@ -9,8 +9,6 @@ author: "Katie Ward and Ben Burnley"
 
 ## Set-Up
 
-## Set-Up
-
 ```{r}
 #| echo: false
 #| message: false
@@ -88,3 +86,34 @@ The graph above shows the relationship between party identification and religiou
 
 ## Chart 2
 
+```{r}
+
+#| code-fold: true
+#| code-summary: "Show data cleaning code"
+
+chart2data <- chart1data %>%
+  filter(SATIS_W101 != 99) %>%
+  mutate(satisfied = ifelse(SATIS_W101==1, 1, 0)) %>%
+  mutate(notsatisfied = ifelse(SATIS_W101==2, 1, 0)) %>%
+  group_by(parties) %>%
+  summarize(satisfied = sum(satisfied), notsatisfied = sum(notsatisfied))
+
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show code for chart"
+#| message: false
+
+chart2data %>%
+  ggplot(aes (x = "", y =satisfied, fill=parties)) +
+    geom_col() +
+      coord_polar("y", start=0) +
+        scale_fill_manual(values = c("darkblue", "darkred")) +
+          theme (axis.text = element_blank(),axis.ticks = element_blank(), axis.title = element_blank(), plot.subtitle =   element_text(size = 8)) +
+            labs(
+    title = "Satisfication Rate by Parties",
+    subtitle = "Respondents who said they were satisfied with the way things are going in this country." )
+  
+  
+```
