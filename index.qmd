@@ -155,3 +155,34 @@ chart3 <- chart3data %>%
 chart3  
 
 ```
+
+##Chart 4
+
+```{r}
+
+chart4data <- data %>%
+  filter(F_AGECAT != 99) %>%
+    mutate(age = case_when(F_AGECAT ==1 ~"18-29", 
+                           F_AGECAT==2 ~ "20-49", 
+                           F_AGECAT==3 ~ "50-64", 
+                           F_AGECAT ==4 ~ "65+", TRUE~NA_character_ )) %>%
+  filter(F_PARTYSUM_FINAL == 1 | F_PARTYSUM_FINAL == 2 ) %>%
+  mutate(parties = case_when(F_PARTYSUM_FINAL == 1 ~"Republican/Lean Repub.", 
+                             F_PARTYSUM_FINAL == 2 ~ "Democrat/Lean Dem.", 
+                             TRUE~NA_character_)) 
+
+```
+
+```{r}
+
+chart4 <- chart4data %>%
+  ggplot (aes(age, parties, color = parties)) +
+    geom_jitter(alpha=0.3) +
+  scale_color_manual(values = c("darkblue", "darkred")) +
+   theme (axis.text.y = element_blank(), legend.position = "bottom") +
+    labs(
+    title = "Party Representation by Age",
+    subtitle = "Party identification of survey respondents by age group" )
+
+chart4
+```
