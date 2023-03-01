@@ -3,7 +3,7 @@ title: "assignment04"
 format: 
   html: 
     self-contained: true
-editor: visual
+editor: source
 author: "Katie Ward and Ben Burnley"
 ---
 
@@ -15,7 +15,9 @@ author: "Katie Ward and Ben Burnley"
  
 library (tidyverse)
 library (haven)
+
 data <- read_sav("data/ATP_W101.sav")
+
 ```
 
 Our data are from [Pew Research Center's American Trends Panel Wave 101](https://www.pewresearch.org/american-trends-panel-datasets/). This survey asks a battery of traditional political questions and this particular wave focused on political priorities. The survey was in the field January 10 -- January 17, 2022.
@@ -27,6 +29,7 @@ Our data are from [Pew Research Center's American Trends Panel Wave 101](https:/
 ```{r}
 #| code-fold: true
 #| code-summary: "Show data cleaning code"
+#| message: false
 
 # create data for first chart
 chart1data <- data %>%
@@ -87,9 +90,9 @@ The graph above shows the relationship between party identification and religiou
 ## Chart 2
 
 ```{r}
-
 #| code-fold: true
 #| code-summary: "Show data cleaning code"
+#| message: false
 
 chart2data <- chart1data %>%
   filter(SATIS_W101 != 99) %>%
@@ -106,31 +109,47 @@ chart2data <- chart1data %>%
 #| message: false
 
 chart2 <- chart2data %>%
-  ggplot(aes (x = "", y =satisfied, fill=parties)) +
-    geom_col() +
-      coord_polar("y", start=0) +
-        scale_fill_manual(values = c("darkblue", "darkred")) +
-          theme (axis.text = element_blank(),axis.ticks = element_blank(), axis.title = element_blank(), plot.subtitle =   element_text(size = 8)) +
-            labs(
-    title = "Satisfication Rate by Parties",
-    subtitle = "Respondents who said they were satisfied with the way things are going in this country." )
+  ggplot(aes (x = "", y = satisfied, fill=parties)) +
+  geom_col() +
+  coord_polar("y", start=0) +
+  scale_fill_manual(values = c("darkblue", "darkred")) +
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(), 
+    axis.title = element_blank(),
+    axis.line = element_blank(),
+    plot.subtitle = element_text(size = 8),
+    plot.title = element_text(face = "bold"),
+  ) + 
+  labs(
+    title = "Satisfication Rate by Party",
+    subtitle = "Respondents who said they were satisfied with the way things are going in this country.",
+    caption = "Source: Pew Data Center American Trends Panel Wave 101",
+    fill = "Party ID")
 
 chart2
   
 ```
+
+The pie chart above gives the breakdown by party of respondents that say they are satisfied with the way things are going in the country. 79% of respondents who are satisfied with the country identify as Democrats compared to only 21% who identify as Republicans. Given that Democrats control both chambers of Congress and the Presidency during the time of this survey, this is not necessarily surprising. The proportions are likely not representative of the population as a whole given this is an unweighted proportion of respondents in our sample.
+
+\newline
+
 ## Chart 3
 
 ```{r}
-
 #| code-fold: true
 #| code-summary: "Show data cleaning code"
+#| message: false
 
 chart3data <- data %>%
   filter(F_AGECAT != 99) %>%
-    mutate(age = case_when(F_AGECAT ==1 ~"18-29", 
-                           F_AGECAT==2 ~ "20-49", 
-                           F_AGECAT==3 ~ "50-64", 
-                           F_AGECAT ==4 ~ "65+", TRUE~NA_character_ )) %>%
+  mutate(age = case_when(F_AGECAT ==1 ~"18-29", 
+                         F_AGECAT==2 ~ "30-49", 
+                         F_AGECAT==3 ~ "50-64", 
+                         F_AGECAT ==4 ~ "65+", 
+                         TRUE~NA_character_ )) %>%
   group_by(age) %>%
   summarize(ss = sum(PRIPRES_SC_W101==1, na.rm = TRUE),
             climate = sum(PRIPRES_GCC_W101==1, na.rm = TRUE), 
@@ -138,34 +157,64 @@ chart3data <- data %>%
             immigration = sum(PRIPRES_IMM_W101==1, na.rm = TRUE)) %>%
   pivot_longer(cols = 2:5, names_to = "Policy", values_to = "count")
 
+ages <- data %>% 
+  filter(F_AGECAT != 99) %>%
+  mutate(age = case_when(F_AGECAT ==1 ~"18-29", 
+                         F_AGECAT==2 ~ "30-49", 
+                         F_AGECAT==3 ~ "50-64", 
+                         F_AGECAT ==4 ~ "65+", 
+                         TRUE~NA_character_ )) %>% 
+  group_by(age) %>% 
+  summarize(total = n())
+
+chart3data2 <- chart3data %>% 
+  left_join(ages, by = "age") %>% 
+  mutate(percent = count/total)
+
 ```
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show graph code"
+#| message: false
 
-chart3 <- chart3data %>%
-  ggplot(aes(age, count, color=Policy)) +
-    geom_point(size = 3) +
-    geom_line(aes(group = Policy)) + 
+chart3 <- chart3data2 %>%
+  ggplot(aes(age, percent, color = Policy)) +
+  geom_point(size = 3) +
+  geom_line(aes(group = Policy)) + 
   theme_minimal() +
-  theme( plot.subtitle = element_text(size = 8)) +
+  scale_color_discrete(labels = c("Climate Change", "Crime", "Immigration", "Social Security"))+
   labs(
     title = "Top Policy Priorities by Age",
-    subtitle = "How many respondents selected various policy priorities by each age group" )
+    subtitle = "Percentage of respondents who selected various policy priorities by each age group",
+    x = "Age Cohort",
+    y = "Percent of Respondents",
+    caption = "Source: Pew Data Center American Trends Panel Wave 101"
+  ) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    plot.subtitle = element_text(size = 8)
+  )
 
 chart3  
 
 ```
 
-##Chart 4
+The chart above shows the percentage of respondents who rank a selection of policy areas as the "top priority". The policy areas we selected -- climate change, crime, immigration, and social security -- represent only a portion of the policy areas respondents could rank. We selected these four because of their lack of overlap. Climate change is the top priority among the youngest cohort with over 27% ranking this as their top priority. This policy topic decreases in relevance in the older cohorts. Crime, immigration, and Social Security all increase in importance as you move up the age cohorts, with Social Security unsurprisingly being of top importance to the oldest cohorts.
+
+## Chart 4
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show cleaning code"
+#| message: false
 
 chart4data <- data %>%
   filter(F_AGECAT != 99) %>%
-    mutate(age = case_when(F_AGECAT ==1 ~"18-29", 
-                           F_AGECAT==2 ~ "20-49", 
-                           F_AGECAT==3 ~ "50-64", 
-                           F_AGECAT ==4 ~ "65+", TRUE~NA_character_ )) %>%
+  mutate(age = case_when(F_AGECAT ==1 ~"18-29", 
+                         F_AGECAT==2 ~ "30-49", 
+                         F_AGECAT==3 ~ "50-64", 
+                         F_AGECAT ==4 ~ "65+", TRUE~NA_character_ )) %>%
   filter(F_PARTYSUM_FINAL == 1 | F_PARTYSUM_FINAL == 2 ) %>%
   mutate(parties = case_when(F_PARTYSUM_FINAL == 1 ~"Republican/Lean Repub.", 
                              F_PARTYSUM_FINAL == 2 ~ "Democrat/Lean Dem.", 
@@ -174,15 +223,28 @@ chart4data <- data %>%
 ```
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show graph code"
+#| message: false
 
 chart4 <- chart4data %>%
   ggplot (aes(age, parties, color = parties)) +
-    geom_jitter(alpha=0.3) +
+  geom_jitter(alpha=0.3) +
   scale_color_manual(values = c("darkblue", "darkred")) +
-   theme (axis.text.y = element_blank(), legend.position = "bottom") +
-    labs(
+  theme_minimal()+
+  theme (axis.text.y = element_blank(), 
+         legend.position = "bottom",
+         plot.title = element_text(face = "bold"),
+         axis.title.y = element_blank()) +
+  labs(
     title = "Party Representation by Age",
-    subtitle = "Party identification of survey respondents by age group" )
+    subtitle = "Party identification of survey respondents by age group",
+    x = "Age Cohort",
+    caption = "Source: Pew Data Center American Trends Panel Wave 101",
+    color = "Party ID"
+    )
 
 chart4
 ```
+
+For this final chart, we attempted a novel representation of our sample, with each dot representings one respondent in our sample. We've separated them out by party identification and age cohort. The chart shows several interesting trends. First, there are more Democrats in our sample than Republicans, illustrating concerns of differential non-response in polling. Additionally, though the age cohorts are balanced across party lines, there are very few young people in the survey overall.
