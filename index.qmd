@@ -16,6 +16,7 @@ author: "Katie Ward and Ben Burnley"
 library (tidyverse)
 library (haven)
 
+# this file is in the .ignore
 data <- read_sav("data/ATP_W101.sav")
 
 ```
