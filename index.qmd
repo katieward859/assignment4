@@ -63,7 +63,7 @@ chart1 <- chart1data %>%
   filter(!is.na(religiousactivity)) %>%
   ggplot(aes(religiousactivity, fill=parties)) +
   geom_bar(position = "dodge") +
-  scale_fill_manual(values = c("darkblue", "darkred")) +
+  scale_fill_manual(values = c("blue", "red")) +
   coord_flip() +
   theme_minimal() +
   labs(
@@ -249,3 +249,6 @@ chart4
 ```
 
 For this final chart, we attempted a novel representation of our sample, with each dot representings one respondent in our sample. We've separated them out by party identification and age cohort. The chart shows several interesting trends. First, there are more Democrats in our sample than Republicans, illustrating concerns of differential non-response in polling. Additionally, though the age cohorts are balanced across party lines, there are very few young people in the survey overall.
+
+
+
